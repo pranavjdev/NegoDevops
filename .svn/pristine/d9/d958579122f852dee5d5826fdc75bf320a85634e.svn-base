@@ -1,0 +1,89 @@
+package com.negociosit.negociosdevops;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+/**
+ * Servlet implementation class ChangePasswordController
+ */
+@WebServlet("/ChangePasswordController")
+public class ChangePasswordController extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public ChangePasswordController() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		response.getWriter().append("Served at: ").append(request.getContextPath());
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		HttpSession session = request.getSession();
+		String newpassword = request.getParameter("newpassword");
+		String confirmpassword = request.getParameter("confirmpassword");
+		String currentpassword = request.getParameter("currentpassword");
+		PrintWriter out = response.getWriter();
+		String oldPassword = (String) session.getAttribute("password");
+		String email = (String) session.getAttribute("username");
+		if (newpassword != null) {
+			try {
+				if (oldPassword.equalsIgnoreCase(currentpassword)) {
+
+					if (newpassword.equalsIgnoreCase(confirmpassword)) {
+
+						Class.forName("com.mysql.jdbc.Driver");
+						java.sql.Connection con = java.sql.DriverManager
+								.getConnection("jdbc:mysql://localhost:3306/negodev", "root", "password");
+						java.sql.Statement st = con.createStatement();
+						st.executeUpdate(
+								"update user set password='" + newpassword + "' where email='" + email + "'");
+						con.close();
+						session.invalidate();
+						out.println("<script type=\"text/javascript\">");
+						out.println("alert('Password change successfully');");
+						out.println("location='Login.jsp';");
+						out.println("</script>");
+					} else {
+						out.println("<script type=\"text/javascript\">");
+						out.println("alert('password and confirm password not matching');");
+						out.println("location='ChangePassword.jsp';");
+						out.println("</script>");
+					}
+
+				} else {
+					out.println("<script type=\"text/javascript\">");
+					out.println("alert('Please check your current password');");
+					out.println("location='ChangePassword.jsp';");
+					out.println("</script>");
+				}
+			} catch (Exception e) {
+			}
+		} else {
+			out.println("<script type=\"text/javascript\">");
+			out.println("alert('Please enter all the fields');");
+			out.println("location='ChangePassword.jsp';");
+			out.println("</script>");
+		}
+
+	}
+
+}

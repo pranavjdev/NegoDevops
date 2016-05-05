@@ -1,0 +1,174 @@
+<%@page import="javax.print.Doc"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ page import="java.util.*"%>
+<%@ page import="java.sql.DriverManager"%>
+<%@ page import="java.sql.ResultSet"%>
+<%@ page import="java.sql.Statement"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Negocios</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css">
+<style>
+html, body {
+	overflow: hidden;
+}
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+th, td {
+	text-align: left;
+	padding: 8px;
+}
+
+tr:nth-child(even) {
+	background-color: #f2f2f2
+}
+
+th {
+	background-color: #4CAF50;
+	color: white;
+}
+
+table.scroll tbody, table.scroll thead {
+	display: block;
+}
+
+thead tr th {
+	height: 30px;
+	line-height: 30px;
+	/*text-align: left;*/
+}
+
+table.scroll tbody {
+	height: 400px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+</style>
+<script type="text/javascript">
+	window.history.forward();
+	function noBack() {
+		window.history.forward();
+		<%
+		if ("authenticated".equals(session.getAttribute("usertoken"))) {
+		
+		String role = (String) session.getAttribute("role");
+		if(role.equalsIgnoreCase("ADMIN")){
+			
+			%>
+			var Table = document.getElementById("leaveRequestTable");
+			//Table.innerHTML = "";
+
+			 var oRows = document.getElementById("leaveRequestTable")
+					.getElementsByTagName('tr');
+			var iRowCount = oRows.length; 
+			<%
+			Class.forName("com.mysql.jdbc.Driver");
+
+			java.sql.Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/negodev",
+					"root", "password");
+
+			Statement st1 = conn.createStatement();
+
+			ResultSet resultset = st1.executeQuery("select * from leaves order by date desc");
+			int indexs = 0;
+			while (resultset.next()) {
+				indexs++;%>
+				var oRows = document.getElementById("leaveRequestTable").getElementsByTagName(
+							'tr');
+					var iRowCount = oRows.length;
+					//window.alert(iRowCount);
+					var row = Table.insertRow(iRowCount);
+					var cell1 = row.insertCell(0);
+					var cell2 = row.insertCell(1);
+					var cell3 = row.insertCell(2);
+					var cell4 = row.insertCell(3);
+					var cell5 = row.insertCell(4);
+					
+					cell1.innerHTML =
+						<%=indexs%>
+							cell2.innerHTML ='<%=resultset.getString("from")%>'
+								cell3.innerHTML ='<%=resultset.getString("date")%>'
+										cell4.innerHTML ='<%=resultset.getString("status")%>'
+										<%
+										if(resultset.getString("status").equalsIgnoreCase("Approved")){
+											%>
+											cell5.innerHTML ='<a href="HomeController?id=<%=resultset.getString("id")%>&action=del">Delete</a>'
+													<%
+										}else{
+										%>
+											cell5.innerHTML ='<a href="HomeController?id=<%=resultset.getString("id")%>&action=approve">Approve</a>/<a href="HomeController?id=<%=resultset.getString("id")%>&action=reject">Reject</a>'
+													<%
+										}
+													%>
+					<%
+			}
+			conn.close();
+		}else{
+			%>
+			document.getElementById("adminPannel").style.visibility = 'hidden';  
+			<%
+		}
+
+		
+		} else {
+			response.sendRedirect("Login.jsp");
+		}%>
+	}
+
+</script>
+</head>
+<body onload="noBack();" onpageshow="if (event.persisted) noBack();"
+	onunload="">
+<div
+		style="width: 100%; font-size: 36px; line-height: 48px;  background-color: #185b99; color: white"><img src="https://d2f2vj6i7hhqf6.cloudfront.net/server/na-va-app-1/account/negociosit/logo?20151018070220" style="width: 50px;height: 40px;"/> <span>Negocios
+		IT Solutions</span></div>
+		
+		
+		
+			<ul>
+  <li><a class="active"  href="#home">Home</a></li>
+  <li><a href="TimeSheet.jsp">Time Sheet</a></li>
+  <li><a href="RequestLeave.jsp">Request Leave</a></li>
+  <div class="dropdown">
+   <li class="dropbtn"><a href="#news">Profile</a>
+    <div class="dropdown-content">
+      <a href="ChangePassword.jsp">Change Password</a>
+    </div>
+    </li>
+  </div>
+  
+  <ul style="float:right;list-style-type:none;">
+    <li id="myName"><a href="#about">About</a></li>
+    <li><a href="LogoutController">Logout</a></li>
+  </ul>
+</ul>
+
+	<br>
+	<br>
+	<br>
+<div style="float: center; left: 10%; right: 10%" id="adminPannel">
+
+<font size = "4" color = "blue">Leave Requests</font>
+
+			<table id="leaveRequestTable" class="scroll">
+
+				<tr>
+					<th>Sl No</th>
+					<th>From</th>
+					<th>Date</th>
+					<th>Status</th>
+					<th>Actions</th>
+			</table>
+			
+
+		</div>
+
+</body>
+</html>

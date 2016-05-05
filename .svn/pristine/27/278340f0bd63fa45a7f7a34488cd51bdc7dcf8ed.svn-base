@@ -1,0 +1,172 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ page import="java.util.*"%>
+<%@ page import="java.sql.DriverManager"%>
+<%@ page import="java.sql.ResultSet"%>
+<%@ page import="java.sql.Statement"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Negocios</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script type="text/javascript">
+	window.history.forward();
+	function noBack() {
+		window.history.forward();
+		<%if ("authenticated".equals(session.getAttribute("usertoken"))) {
+				Class.forName("com.mysql.jdbc.Driver");
+				java.sql.Connection con = java.sql.DriverManager.getConnection("jdbc:mysql://localhost:3306/negodev",
+						"root", "password");
+				java.sql.Statement st = con.createStatement();
+				String querry = "select * from leaves where `from`='"
+						+ session.getAttribute("username") + "'";
+				System.out.print("querry-----" + querry);
+				ResultSet resultset = st.executeQuery(querry);
+//availableLeaves
+				int indexs = 0;
+float leavesTaken = 0;
+				while (resultset.next()) {
+					indexs++;
+					if(resultset.getString("type")!=null && resultset.getString("type").equalsIgnoreCase("halfday")){
+						leavesTaken+=.5;
+					}else
+						leavesTaken++;
+					
+					
+					%>
+					
+				
+	
+	var Table = document.getElementById("outputTable");
+	//Table.innerHTML = "";
+
+	 var oRows = document.getElementById("outputTable")
+			.getElementsByTagName('tr');
+	var iRowCount = oRows.length; 
+	
+	
+	
+	var row = Table.insertRow(iRowCount);
+	var cell1 = row.insertCell(0);
+	var cell2 = row.insertCell(1);
+	var cell3 = row.insertCell(2);
+	var cell4 = row.insertCell(3);
+	cell1.innerHTML = <%=indexs%>
+			cell2.innerHTML ='<center><%=resultset.getString("date")%>'
+				cell3.innerHTML ='<%=resultset.getString("type")%>'
+					cell4.innerHTML ='<%=resultset.getString("status")%>'
+<%}con.close();
+if(leavesTaken >= 12){
+%>
+document.getElementById("submitRequestHere").innerHTML = ' <legend><font color="blue"> Submit your leave request here</font></legend> Your leaves for this year are over'
+<%
+}
+%>
+document.getElementById("availableLeaves").innerHTML = 'You have <%=12.0-leavesTaken%> leaves available';
+<%
+			} else {
+				response.sendRedirect("Login.jsp");
+			}%>	
+			
+	}
+
+	function validateForm() {
+		var datepicker = document.forms[0]["datepicker"].value;
+		if (datepicker == null || datepicker == "") {
+			alert("Please select a date");
+			return false;
+		}
+		var reason = document.forms[0]["reason"].value;
+		if (reason == null || reason == "") {
+			alert("Please enter reason for the leave");
+			return false;
+		}
+	}
+	  $(function() {
+		    $( "#datepicker" ).datepicker();
+		  });
+</script>
+</head>
+<body onload="noBack();" onpageshow="if (event.persisted) noBack();"
+	onunload="">
+	<div
+		style="width: 100%; font-size: 36px; line-height: 48px; background-color: navy; color: white">Negocios
+		IT Solutions</div>
+
+
+	<ul>
+		<li><a href="Home.jsp">Home</a></li>
+		<li><a href="TimeSheet.jsp" >Time Sheet</a></li>
+		 <li><a class="active"  href="RequestLeave.jsp">Request Leave</a></li>
+		<div class="dropdown">
+			<li class="dropbtn"><a href="#news">Profile</a>
+				<div class="dropdown-content">
+					<a href="ChangePassword.jsp">Change Password</a> 
+				</div></li>
+		</div>
+
+		<ul style="float: right; list-style-type: none;">
+			<li id="myName"><a href="#about">About</a></li>
+			<li><a href="LogoutController">Logout</a></li>
+		</ul>
+	</ul>
+<br>
+<br>
+<br>
+
+	<br>
+	<br>
+	<div style="float: left;">
+	 <fieldset id="submitRequestHere">
+                  <legend><font color="blue"> Submit your leave request here</font></legend>
+		<form action="leave" method="post" id="addTaskForm"
+			onsubmit="return validateForm()">
+			<table style="width: 40%">
+				<tr>
+					<td>Date</td>
+					<td><input type="text" id="datepicker" name="date" /></td>
+				</tr>
+				<tr>
+				<td>Reason</td>
+					<td><textarea rows="4" cols="50" name="reason"
+								id="reason"></textarea></td>
+				</tr>
+				<tr>
+				<td>Type</td>
+					<td><select id="type" name="type">
+							<option value="fullday" selected>Fullday</option>
+							<option value="halfday">Halfday</option>
+					</select></td>
+					</tr>
+			</table>
+			<br> <br> <input type="submit" value="Request Leave" />
+		</form>
+
+		<!-- <button onclick="myCreateFunction()">Add task</button>  -->
+</fieldset>
+	</div>
+
+	<div style="float: right;">
+
+<font color="blue" id="availableLeaves"> </font>
+		<table id="outputTable" width="80%" border="1" name="outputTable">
+			<tr>
+				<th>Index</th>
+				<th>Date</th>
+				<th>Type</th>
+				<th>Status</th>
+			</tr>
+
+		</table>
+
+		<br> <br>
+		
+		<br> <br>
+	</div>
+
+</body>
+</html>
